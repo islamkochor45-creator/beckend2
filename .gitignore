@@ -13,4 +13,4 @@ celerybeat-schedule
 .DS_Store
 venv/
 .venv/
-.env.example/
+.env.example

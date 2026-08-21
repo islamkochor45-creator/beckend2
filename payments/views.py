@@ -9,7 +9,10 @@ class PaymentCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(provider="mock", status="pending")
+        payment = serializer.save(provider="mock", status="succeeded")
+        if payment.order.status == "pending":
+            payment.order.status = "paid"
+            payment.order.save(update_fields=["status"])
 
 
 class PaymentWebhookView(generics.GenericAPIView):
@@ -26,4 +29,7 @@ class PaymentWebhookView(generics.GenericAPIView):
             )
         payment.status = status_value
         payment.save()
+        if status_value == "succeeded":
+            payment.order.status = "paid"
+            payment.order.save(update_fields=["status"])
         return Response({"detail": "Payment status updated."})

@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from .models import Payment
-from .serializers import PaymentSerializer
+from .serializers import PaymentSerializer, PaymentStatusUpdateSerializer
 
 
 class PaymentCreateView(generics.CreateAPIView):
@@ -13,7 +13,7 @@ class PaymentCreateView(generics.CreateAPIView):
 
 
 class PaymentWebhookView(generics.GenericAPIView):
-    serializer_class = PaymentSerializer
+    serializer_class = PaymentStatusUpdateSerializer
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):

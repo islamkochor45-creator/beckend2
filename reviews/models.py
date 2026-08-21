@@ -15,8 +15,8 @@ class Review(TimeStampedModel):
     text = models.TextField(blank=True)
     is_moderated = models.BooleanField(default=False)
 
-    class Meta:
-        unique_together = ("user", "product")
+    # class Meta:
+    #     unique_together = ("user", "product")
 
     def __str__(self):
         return f"Review for {self.product.name} by {self.user.email}"

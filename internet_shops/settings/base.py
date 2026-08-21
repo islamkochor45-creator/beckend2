@@ -4,7 +4,7 @@ from pathlib import Path
 import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-ENV_FILE = BASE_DIR / ".env"
+ENV_FILE = BASE_DIR / ".env.example"
 if ENV_FILE.exists():
     environ.Env.read_env(ENV_FILE)
 
@@ -151,7 +151,7 @@ CELERY_RESULT_BACKEND = env("REDIS_URL")
 CELERY_BEAT_SCHEDULE = {}
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "noreply@internet-shops.local"
+DEFAULT_FROM_EMAIL = "islamkochor45@gmail.com"
 
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": env("CLOUDINARY_CLOUD_NAME", default="demo"),

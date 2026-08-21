@@ -64,3 +64,18 @@ class ProductAttribute(models.Model):
 
     def __str__(self):
         return f"{self.name}: {self.value}"
+
+
+class FavoriteItem(TimeStampedModel):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="favorites"
+    )
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="favorited_by"
+    )
+
+    class Meta:
+        unique_together = ("user", "product")
+
+    def __str__(self):
+        return f"{self.user.email} favorited {self.product.name}"

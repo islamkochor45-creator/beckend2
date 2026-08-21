@@ -1,5 +1,12 @@
 from rest_framework import serializers
-from .models import Category, Product, ProductImage, ProductAttribute, Seller
+from .models import (
+    Category,
+    Product,
+    ProductImage,
+    ProductAttribute,
+    Seller,
+    FavoriteItem,
+)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -15,9 +22,17 @@ class SellerSerializer(serializers.ModelSerializer):
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = ProductImage
         fields = ["id", "image", "alt_text"]
+
+    def get_image(self, obj):
+        if not obj.image:
+            return None
+
+        return obj.image.url
 
 
 class ProductAttributeSerializer(serializers.ModelSerializer):
@@ -46,3 +61,15 @@ class ProductSerializer(serializers.ModelSerializer):
             "images",
             "attributes",
         ]
+
+
+class FavoriteItemSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source="product.name", read_only=True)
+    product_price = serializers.DecimalField(
+        source="product.price", max_digits=10, decimal_places=2, read_only=True
+    )
+
+    class Meta:
+        model = FavoriteItem
+        fields = ["id", "product", "product_name", "product_price", "created_at"]
+        read_only_fields = ["created_at"]

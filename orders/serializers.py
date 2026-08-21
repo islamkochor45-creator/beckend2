@@ -24,7 +24,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
-    address = AddressSerializer()
+
+    address = serializers.PrimaryKeyRelatedField(queryset=Address.objects.all())
 
     class Meta:
         model = Order
@@ -37,14 +38,24 @@ class OrderSerializer(serializers.ModelSerializer):
             "commission_amount",
             "items",
         ]
-        read_only_fields = ["user", "status", "total_amount", "commission_amount"]
+        read_only_fields = [
+            "user",
+            "status",
+            "total_amount",
+            "commission_amount",
+        ]
 
+    def validate_address(self, address):
+        if address.user != self.context["request"].user:
+            raise serializers.ValidationError("Этот адрес вам не принадлежит.")
+        return address
+
+    # def create(self, validated_data):
+    #     return Order.objects.create(
+    #         user=self.context["request"].user,
+    #         **validated_data
+    #     )
     def create(self, validated_data):
-        address_data = validated_data.pop("address")
-        address = Address.objects.create(
-            user=self.context["request"].user, **address_data
-        )
-        order = Order.objects.create(
-            user=self.context["request"].user, address=address, **validated_data
-        )
-        return order
+        validated_data.pop("user", None)
+
+        return Order.objects.create(user=self.context["request"].user, **validated_data)

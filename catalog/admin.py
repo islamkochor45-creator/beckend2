@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import Category, Product, ProductImage, ProductAttribute, Seller
+from .models import (
+    Category,
+    Product,
+    ProductImage,
+    ProductAttribute,
+    Seller,
+    FavoriteItem,
+)
 
 
 @admin.register(Category)
@@ -26,3 +33,9 @@ class ProductAttributeAdmin(admin.ModelAdmin):
 @admin.register(Seller)
 class SellerAdmin(admin.ModelAdmin):
     list_display = ("company_name", "user", "is_verified")
+
+
+@admin.register(FavoriteItem)
+class FavoriteItemAdmin(admin.ModelAdmin):
+    list_display = ("user", "product", "created_at")
+    search_fields = ("user__email", "product__name")

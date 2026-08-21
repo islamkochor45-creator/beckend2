@@ -15,3 +15,10 @@ class PaymentSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["status", "external_id", "created_at"]
+
+
+class PaymentStatusUpdateSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Payment
+        fields = ["status"]

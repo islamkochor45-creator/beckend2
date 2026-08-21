@@ -19,6 +19,14 @@ class SellerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Seller
         fields = ["id", "company_name", "is_verified", "logo", "user"]
+        read_only_fields = ["id", "user", "is_verified"]
+
+
+class ProductImageUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductImage
+        fields = ["id", "image", "alt_text"]
+        read_only_fields = ["id"]
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -42,6 +50,8 @@ class ProductAttributeSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    seller_name = serializers.CharField(source="seller.company_name", read_only=True)
+    category_name = serializers.CharField(source="category.name", read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
     attributes = ProductAttributeSerializer(many=True, read_only=True)
 
@@ -50,7 +60,9 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "seller",
+            "seller_name",
             "category",
+            "category_name",
             "name",
             "slug",
             "description",

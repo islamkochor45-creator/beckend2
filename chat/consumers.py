@@ -35,14 +35,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
     async def receive_json(self, content, **kwargs):
-        text = content.get("text")
+        text = content.get("text") or content.get("message")
         if not text:
             return
 
-        # Сохраняем сообщение в БД — без этого оно существовало только
-        # как временная рассылка через Redis и терялось при обновлении
-        # страницы/переподключении.
-        await self.save_message(text)
+        room = await self.get_room_by_name(self.room_name)
+        await self.create_message(room, self.scope["user"], text)
 
         await self.channel_layer.group_send(
             self.group_name,
@@ -50,17 +48,24 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "type": "chat.message",
                 "text": text,
                 "user": self.scope["user"].email,
+                "sender_channel_name": self.channel_name,
             },
         )
 
     async def chat_message(self, event):
+        if event.get("sender_channel_name") == self.channel_name:
+            return
         await self.send_json({"text": event["text"], "user": event["user"]})
 
     @database_sync_to_async
-    def save_message(self, text):
+    def get_room_by_name(self, room_name):
+        return ChatRoom.objects.get(id=room_name)
+
+    @database_sync_to_async
+    def create_message(self, room, user, text):
         Message.objects.create(
-            room_id=self.room_name,
-            user=self.scope["user"],
+            room=room,
+            user=user,
             text=text,
         )
 

@@ -1,6 +1,8 @@
 from decimal import Decimal
 
 from django.db import transaction
+from django.core.mail import send_mail
+from django.conf import settings
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
@@ -90,6 +92,42 @@ class CheckoutView(generics.CreateAPIView):
         serializer = self.get_serializer(order)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class SendPurchaseMessageView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        order_id = request.data.get("order_id")
+        order = (
+            Order.objects.filter(id=order_id, user=request.user)
+            .prefetch_related("items__product")
+            .first()
+        )
+        if not order:
+            return Response(
+                {"detail": "Заказ не найден."}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        item_lines = [
+            f"- {item.product.name}: {item.quantity} x {item.price_at_purchase}"
+            for item in order.items.all()
+        ]
+        message = (
+            f"Здравствуйте, {request.user.email}!\n\n"
+            f"Информация о покупке №{order.id}:\n"
+            f"{chr(10).join(item_lines)}\n\n"
+            f"Итого: {order.total_amount}\n"
+            f"Статус заказа: {order.status}\n"
+        )
+        sent = send_mail(
+            subject=f"Информация о покупке №{order.id}",
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[request.user.email],
+            fail_silently=False,
+        )
+        return Response({"detail": "Письмо отправлено.", "sent": bool(sent)})
 
 
 class OrderDetailView(generics.RetrieveAPIView):

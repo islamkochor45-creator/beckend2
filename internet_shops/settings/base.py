@@ -4,7 +4,7 @@ from pathlib import Path
 import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-ENV_FILE = BASE_DIR / ".env.example"
+ENV_FILE = BASE_DIR / ".env"
 if ENV_FILE.exists():
     environ.Env.read_env(ENV_FILE)
 
